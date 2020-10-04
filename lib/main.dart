@@ -9,7 +9,7 @@ class BluBankApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: FormularioTransferencia(),
+        body: ListaTransferencia(),
       ),
     );
   }
@@ -17,7 +17,7 @@ class BluBankApp extends StatelessWidget {
 
 class FormularioTransferencia extends StatelessWidget {
   final TextEditingController _contraladorCompoNumConta =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _contraladorCompoValor = TextEditingController();
 
   @override
@@ -40,20 +40,22 @@ class FormularioTransferencia extends StatelessWidget {
             ),
             RaisedButton(
               child: Text('Confirmar'),
-              onPressed: () => _criaTransferencia(),
+              onPressed: () => _criaTransferencia(context),
             )
           ],
         ));
   }
 
-  void _criaTransferencia() {
+  void _criaTransferencia(BuildContext context) {
     final int numeroConta =
     int.tryParse(_contraladorCompoNumConta.text);
     final double valor =
     double.tryParse(_contraladorCompoValor.text);
     if (numeroConta != null && valor != null) {
-      final tranferenciaCriada = Transferencia(valor, numeroConta);
-      debugPrint('$tranferenciaCriada');
+      final transferenciaCriada = Transferencia(valor, numeroConta);
+      debugPrint('Criando Transferencia');
+      debugPrint('$transferenciaCriada');
+      Navigator.pop(context, transferenciaCriada);
     }
   }
 }
@@ -74,7 +76,7 @@ class Editor extends StatelessWidget {
         controller: controlador,
         style: TextStyle(fontSize: 24.0),
         decoration: InputDecoration(
-          icon: icon !=null ? Icon(icon) : null,
+          icon: icon != null ? Icon(icon) : null,
           labelText: rotulo,
           hintText: dica,
         ),
@@ -85,22 +87,33 @@ class Editor extends StatelessWidget {
 }
 
 class ListaTransferencia extends StatelessWidget {
+  final List<Transferencia> _transferencias = List();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Transferencia'),
       ),
-      body: Column(
-        children: [
-          ItemTransferencia(Transferencia(250.00, 1001)),
-          ItemTransferencia(Transferencia(150.00, 2002)),
-          ItemTransferencia(Transferencia(350.00, 3004)),
-          ItemTransferencia(Transferencia(1250.00, 5005))
-        ],
+      body: ListView.builder(
+        itemCount: _transferencias.length,
+        itemBuilder: (context, indice){
+          final transferecia = _transferencias[indice];
+          return ItemTransferencia(transferecia);
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: Icon(Icons.add), onPressed: () {
+        final Future<Transferencia> future = Navigator.push(
+            context, MaterialPageRoute(builder: (context) {
+          return FormularioTransferencia();
+        }));
+        future.then((transfereciaRecebida) {
+          debugPrint('Chegou no Then do Future');
+          debugPrint('$transfereciaRecebida');
+          _transferencias.add(transfereciaRecebida);
+        });
+      },
       ),
     );
   }
@@ -113,10 +126,10 @@ class ItemTransferencia extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
         child: ListTile(
-      leading: Icon(Icons.monetization_on),
-      title: Text(_transferencia.valor.toString()),
-      subtitle: Text(_transferencia.numeroConta.toString()),
-    ));
+          leading: Icon(Icons.monetization_on),
+          title: Text(_transferencia.valor.toString()),
+          subtitle: Text(_transferencia.numeroConta.toString()),
+        ));
   }
 
   ItemTransferencia(this._transferencia);
