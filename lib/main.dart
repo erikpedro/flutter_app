@@ -86,8 +86,17 @@ class Editor extends StatelessWidget {
   }
 }
 
-class ListaTransferencia extends StatelessWidget {
+class ListaTransferencia extends StatefulWidget {
   final List<Transferencia> _transferencias = List();
+
+  @override
+  State<StatefulWidget> createState() {
+    return ListaTransferenciasStates();
+  }
+}
+
+
+class ListaTransferenciasStates extends State<ListaTransferencia> {
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +105,9 @@ class ListaTransferencia extends StatelessWidget {
         title: Text('Transferencia'),
       ),
       body: ListView.builder(
-        itemCount: _transferencias.length,
+        itemCount: widget._transferencias.length,
         itemBuilder: (context, indice){
-          final transferecia = _transferencias[indice];
+          final transferecia = widget._transferencias[indice];
           return ItemTransferencia(transferecia);
         },
       ),
@@ -111,13 +120,18 @@ class ListaTransferencia extends StatelessWidget {
         future.then((transfereciaRecebida) {
           debugPrint('Chegou no Then do Future');
           debugPrint('$transfereciaRecebida');
-          _transferencias.add(transfereciaRecebida);
+          setState(() {
+          widget._transferencias.add(transfereciaRecebida);
+          });
         });
       },
       ),
     );
   }
 }
+
+
+
 
 class ItemTransferencia extends StatelessWidget {
   final Transferencia _transferencia;
